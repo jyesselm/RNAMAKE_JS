@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>File IO Unittest</title>
+    <script src="js/rnamake.js"></script>
+    <script src="js/file_io.js"></script>
+</head>
+
+<body>
+    <script>
+        //alert(RNAMAKE.PATH);
+
+        var reader = new RNAMAKE.FileReaderXML();
+        var lines = reader.read_file("../test/resources/test.txt");
+
+        for(i in lines) {
+            console.log(lines[i]);
+        }
+
+    </script>
+
+</body>
+</html>
