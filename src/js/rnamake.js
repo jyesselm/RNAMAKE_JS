@@ -4,4 +4,4 @@
 
 var RNAMAKE = { version : '0.01' };
 
-
+RNAMAKE.PATH = "/test/";
