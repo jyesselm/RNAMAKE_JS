@@ -18,6 +18,7 @@
     <script src="../../src/js/Projector.js"></script>
     <script src="../../src/js/OrbitControls.js"></script>
     <script src="../../src/js/Euler.js"></script>
+    <script src="../../src/js/ConvexGeometry.js"></script>
 
     <script src="../../src/js/rnamake.js"></script>
     <script src="../../src/js/file_io.js"></script>
@@ -62,10 +63,6 @@
             var reader = new RNAMAKE.FileReaderXML();
             var lines = reader.read_file(RNAMAKE.PATH + "/test/resources/res_strs.dat");
             var r = RNAMAKE.str_to_res(lines[1]);
-            //var r2 = RNAMAKE.str_to_res(lines[0]);
-
-            //scene.add(r.obj);
-            //r2.draw(scene, RNAMAKE.DrawMode.STICKS);
 
             var geo = new THREE.Geometry();
             var material = new THREE.MeshLambertMaterial({
@@ -73,26 +70,31 @@
             });
             var mesh = new THREE.Mesh(geo, material);
 
-            r.draw(geo, RNAMAKE.DrawMode.STICKS);
+            //r.draw(geo, RNAMAKE.DrawMode.STICKS);
 
             for(var i in lines) {
                 if(i < 2) { continue; }
                 var rn = RNAMAKE.str_to_res(lines[i]);
-                rn.draw(geo, RNAMAKE.DrawMode.STICKS);
-                //if(i > 100) { break; }
+                if(rn.name == "A") {
+                    rn.draw(geo, RNAMAKE.DrawMode.STICKS);
+                    rn.draw_cartoons(geo);
+                    ///scene.add(m);
+                    break;
+                }
+                //if(i > 10) { break; }
 
             }
 
             scene.add(mesh);
 
             //stupid way of setting camera to center of current objects
-            var center = r.center();
-            var geometry = new THREE.SphereGeometry(0.25, 4, 4);
-            var obj = new THREE.Mesh(geometry);
-            obj.position.copy(center);
+            //var center = r.center();
+            //var geometry = new THREE.SphereGeometry(0.25, 4, 4);
+            //var obj = new THREE.Mesh(geometry);
+            //obj.position.copy(center);
 
             var bb = new THREE.Box3();
-            bb.setFromObject(obj);
+            bb.setFromObject(mesh);
 
 
 

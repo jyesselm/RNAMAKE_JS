@@ -7,9 +7,8 @@ RNAMAKE.DrawMode = {
 };
 
 RNAMAKE.Atom = function(name, coords, color) {
-    if(color == undefined) {
-        color = 'red';
-    }
+    if(color == undefined) { color = 'red'; }
+
     this.draw_mode = 0;
     this.drawn = 0;
     this.coords = coords;
@@ -39,7 +38,6 @@ RNAMAKE.Atom = function(name, coords, color) {
         if(this.draw_mode == RNAMAKE.DrawMode.STICKS) {
             var geometry = new THREE.SphereGeometry(0.25, 4, 4);
             //var material = new THREE.MeshBasicMaterial(  {color: this.color, shading: THREE.SmoothShading} );
-            var color = Math.floor(Math.random() * 16777215).toString(16);
             for (var i = 0; i < geometry.faces.length; i++) {
                 face = geometry.faces[i];
                 face.color.set(this.color);
@@ -53,9 +51,6 @@ RNAMAKE.Atom = function(name, coords, color) {
         }
     }
 
-    this.clear = function(scene, view_mode) {
-
-    }
 };
 
 RNAMAKE.ResidueType = function(name, atom_map) {
@@ -108,6 +103,7 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
     if(this.i_code == undefined) {  this.i_code = ""; }
     this.atoms = [];
     this.bonds = [];
+    this.bond_color = 'gray';
 
     this.center = function() {
         var center = new THREE.Vector3();
@@ -154,56 +150,111 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
                 obj.updateMatrix();
                 geo.merge(obj.geometry, obj.matrix);
             }
+            this.draw_bonds(geo);
         }
     }
 
-    this.draw_bonds = function(scene) {
-        this.draw_bond(0, 1, scene);
-        this.draw_bond(0, 2, scene);
-        this.draw_bond(0, 3, scene);
-        this.draw_bond(3, 4, scene);
-        this.draw_bond(4, 5, scene);
-        this.draw_bond(5, 6, scene);
-        this.draw_bond(5, 7, scene);
-        this.draw_bond(5, 7, scene);
-        this.draw_bond(7, 8, scene);
-        this.draw_bond(6, 9, scene);
-        this.draw_bond(7, 10, scene);
-        this.draw_bond(9, 10, scene);
-        this.draw_bond(10, 11, scene);
+    this.draw_bonds = function(geo) {
+        this.draw_bond(0, 1, geo);
+        this.draw_bond(0, 2, geo);
+        this.draw_bond(0, 3, geo);
+        this.draw_bond(3, 4, geo);
+        this.draw_bond(4, 5, geo);
+        this.draw_bond(5, 6, geo);
+        this.draw_bond(5, 7, geo);
+        this.draw_bond(5, 7, geo);
+        this.draw_bond(7, 8, geo);
+        this.draw_bond(6, 9, geo);
+        this.draw_bond(7, 10, geo);
+        this.draw_bond(9, 10, geo);
+        this.draw_bond(10, 11, geo);
 
         if(this.name == "G") {
-            this.draw_bond(12, 13, scene);
-            this.draw_bond(13, 14, scene);
-            this.draw_bond(13, 15, scene);
-            this.draw_bond(15, 16, scene);
-            this.draw_bond(16, 17, scene);
-            this.draw_bond(17, 18, scene);
-            this.draw_bond(18, 19, scene);
-            this.draw_bond(17, 20, scene);
-            this.draw_bond(20, 21, scene);
-            this.draw_bond(21, 22, scene);
-            this.draw_bond(22, 9, scene);
-            this.draw_bond(22, 16, scene);
-            this.draw_bond(12, 18, scene);
+            this.draw_bond(12, 13, geo);
+            this.draw_bond(13, 14, geo);
+            this.draw_bond(13, 15, geo);
+            this.draw_bond(15, 16, geo);
+            this.draw_bond(16, 17, geo);
+            this.draw_bond(17, 18, geo);
+            this.draw_bond(18, 19, geo);
+            this.draw_bond(17, 20, geo);
+            this.draw_bond(20, 21, geo);
+            this.draw_bond(21, 22, geo);
+            this.draw_bond(22, 9, geo);
+            this.draw_bond(22, 16, geo);
+            this.draw_bond(12, 18, geo);
+        }
+
+        if(this.name == "A") {
+            this.draw_bond(9, 21, geo);
+            this.draw_bond(21, 15, geo);
+            this.draw_bond(15, 14, geo);
+            this.draw_bond(14, 13, geo);
+            this.draw_bond(13, 12, geo);
+            this.draw_bond(12, 17, geo);
+            this.draw_bond(17, 18, geo);
+            this.draw_bond(17, 16, geo);
+            this.draw_bond(15, 16, geo);
+            this.draw_bond(16, 19, geo);
+            this.draw_bond(19, 20, geo);
+            this.draw_bond(21, 20, geo);
+
+
         }
     };
 
-    this.draw_bond = function(i, j, scene) {
-        if(this.atoms[i] == null || this.atoms[j] == null) { return; }
+    this.draw_cartoons = function(geo) {
+        this.draw_sugar_cartoon(geo);
+        this.draw_base_cartoon(geo);
+    }
+
+    this.draw_sugar_cartoon = function(geo) {
+        var sugar_points = [];
+        sugar_points.push( this.atoms[5].coords.clone());
+        sugar_points.push( this.atoms[6].coords.clone());
+        sugar_points.push( this.atoms[9].coords.clone());
+        sugar_points.push( this.atoms[10].coords.clone());
+        sugar_points.push( this.atoms[7].coords.clone());
+
+        var geometry = new THREE.ConvexGeometry(sugar_points);
+
+        for (var k = 0; k < geometry.faces.length; k++) {
+            face = geometry.faces[k];
+            face.color.set(this.bond_color);
+        }
+        var mesh = new THREE.Mesh(geometry);
+        //mesh.scale.set( 1, 1, 1);
+        //mesh.position.set(this.atoms[5].coords);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.updateMatrix();
+        geo.merge(mesh.geometry, mesh.matrix);
+    }
+
+    this.draw_base_cartoon = function(geo) {
+        var base_points = [];
+
+    }
+
+    this.draw_bond = function(i, j, geo) {
+        if(this.atoms[i] == null || this.atoms[j] == null) { console.log(i + " " + j); return; }
         var a1 = this.atoms[i];
         var a2 = this.atoms[j];
-        var direction = new THREE.Vector3().subVectors(a2.obj.position, a1.obj.position);
-        var arrow = new THREE.ArrowHelper(direction.clone().normalize(), a1.obj.position);
+        var direction = new THREE.Vector3().subVectors(a2.coords, a1.coords);
+        var arrow = new THREE.ArrowHelper(direction.clone().normalize(), a1.coords);
         var rotation = new THREE.Euler().setFromQuaternion(arrow.quaternion);
         var edgeGeometry = new THREE.CylinderGeometry( 0.15, 0.15, direction.length(), 10, 4 );
         //var edgeGeometry = new THREE.CylinderGeometry( 4, 4, 10, 10, 4 );
 
-        var material =  new THREE.MeshBasicMaterial( { color: 'gray' } );
-        var edge = new THREE.Mesh(edgeGeometry, material);
+        for (var k = 0; k < edgeGeometry.faces.length; k++) {
+            face = edgeGeometry.faces[k];
+            face.color.set(this.bond_color);
+        }
+
+        var edge = new THREE.Mesh(edgeGeometry);
         edge.rotation.copy(rotation);
         //var vect = new THREE.Vector3().addVectors(a1.obj.position, direction.multiplyScalar(0.5));
-        var vect = a1.obj.position.clone();
+        var vect = a1.coords.clone();
         var half_direct = direction.multiplyScalar(0.5);
         vect.x = parseFloat(vect.x) + parseFloat(half_direct.x);
         vect.y = parseFloat(vect.y) + parseFloat(half_direct.y);
@@ -212,8 +263,9 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
         //edge.position.copy(a1.obj.position);
         edge.castShadow = true;
         edge.receiveShadow = true;
-        this.bonds.push(edge);
-        scene.add(edge);
+
+        edge.updateMatrix();
+        geo.merge(edge.geometry, edge.matrix);
 
     }
 };
