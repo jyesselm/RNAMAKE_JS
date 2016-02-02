@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="apple-touch-icon" href="../../src/apple-touch-icon.png">
+    <!-- Place favicon.ico in the root directory -->
+
+    <link rel="stylesheet" href="../../src/css/main.css">
+    <script src="../../src/js/vendor/modernizr-2.8.3.min.js"></script>
+    <script src="../../src/js/Three.js"></script>
+    <script src="../../src/js/Detector.js"></script>
+    <script src="../../src/js/CanvasRenderer.js"></script>
+    <script src="../../src/js/Projector.js"></script>
+    <script src="../../src/js/OrbitControls.js"></script>
+    <script src="../../src/js/Euler.js"></script>
+
+    <script src="../../src/js/rnamake.js"></script>
+    <script src="../../src/js/file_io.js"></script>
+    <script src="../../src/js/structure.js"></script>
+
+    <style type="text/css">
+        body {
+            background-color: #FFFFFF;
+        }
+    </style>
+
+</head>
+<body>
+    <script>
+        var camera, scene, renderer,
+            geometry, material, mesh, controls;
+
+        var light = new THREE.DirectionalLight(0x111111, 1, 0);
+        light.position.set(-20, 60, -10);
+        light.castShadow = true;
+        light.shadowCameraNear = 0;
+        light.shadowCameraFar = 200;
+        light.shadowCameraLeft = -200;
+        light.shadowCameraRight = 200;
+        light.shadowCameraTop = 200;
+        light.shadowCameraBottom = -200;
+        light.shadowDarkness = 0.9;
+
+        init();
+        animate();
+
+        function init() {
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 10;
+
+            scene = new THREE.Scene();
+            scene.add(light);
+
+            var amb_light = new THREE.AmbientLight( 0xffffff, 1);
+            scene.add(amb_light);
+
+            var reader = new RNAMAKE.FileReaderXML();
+            var lines = reader.read_file(RNAMAKE.PATH + "/test/resources/res_strs.dat");
+            var r = RNAMAKE.str_to_res(lines[1]);
+            //var r2 = RNAMAKE.str_to_res(lines[0]);
+
+            //scene.add(r.obj);
+            //r2.draw(scene, RNAMAKE.DrawMode.STICKS);
+
+            var geo = new THREE.Geometry();
+            var material = new THREE.MeshLambertMaterial({
+                vertexColors: THREE.VertexColors
+            });
+            var mesh = new THREE.Mesh(geo, material);
+
+            r.draw(geo, RNAMAKE.DrawMode.STICKS);
+
+            for(var i in lines) {
+                if(i < 2) { continue; }
+                var rn = RNAMAKE.str_to_res(lines[i]);
+                rn.draw(geo, RNAMAKE.DrawMode.STICKS);
+                //if(i > 100) { break; }
+
+            }
+
+            scene.add(mesh);
+
+            //stupid way of setting camera to center of current objects
+            var center = r.center();
+            var geometry = new THREE.SphereGeometry(0.25, 4, 4);
+            var obj = new THREE.Mesh(geometry);
+            obj.position.copy(center);
+
+            var bb = new THREE.Box3();
+            bb.setFromObject(obj);
+
+
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize( window.innerWidth, window.innerHeight ) ;
+            renderer.setClearColor( 0xffffff );
+            renderer.shadowMapEnabled = true;
+
+            controls = new THREE.OrbitControls( camera, renderer.domElement );
+            controls.addEventListener( 'change', light_update );
+            bb.center(controls.target);
+
+            document.body.appendChild( renderer.domElement ) ;
+
+
+        }
+
+        function makeCube(size, color) {
+            var geom = new THREE.SphereGeometry(size, 4, 4);
+
+            for (var i = 0; i < geom.faces.length; i++) {
+                face = geom.faces[i];
+                face.color.setHex('0x' + color);
+            }
+            var cube = new THREE.Mesh(geom);
+            return cube;
+        }
+
+        function animate() {
+            window.requestAnimationFrame( animate );
+            render();
+        }
+
+        function render() {
+            renderer.render( scene, camera );
+        }
+
+        function light_update() {
+            light.position.copy( camera.position);
+        }
+
+
+    </script>
+
+
+</body>
+</html>

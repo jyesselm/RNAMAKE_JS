@@ -22,7 +22,6 @@ RNAMAKE.Atom = function(name, coords, color) {
     };
 
     this.draw = function(scene, draw_mode) {
-        if(this.draw_mode == draw_mode && this.drawn) { return; }
         this.draw_mode = draw_mode;
         if(this.draw_mode == RNAMAKE.DrawMode.STICKS) {
             var geometry = new THREE.SphereGeometry(0.25, 64, 64);
@@ -34,6 +33,25 @@ RNAMAKE.Atom = function(name, coords, color) {
             scene.add(this.obj);
         }
     };
+
+    this.draw_object = function(draw_mode) {
+        if(this.draw_mode == draw_mode && this.drawn) { return; }
+        if(this.draw_mode == RNAMAKE.DrawMode.STICKS) {
+            var geometry = new THREE.SphereGeometry(0.25, 4, 4);
+            //var material = new THREE.MeshBasicMaterial(  {color: this.color, shading: THREE.SmoothShading} );
+            var color = Math.floor(Math.random() * 16777215).toString(16);
+            for (var i = 0; i < geometry.faces.length; i++) {
+                face = geometry.faces[i];
+                face.color.set(this.color);
+            }
+            var obj = new THREE.Mesh(geometry);
+            obj.position.copy(this.coords);
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            return obj;
+
+        }
+    }
 
     this.clear = function(scene, view_mode) {
 
@@ -91,6 +109,15 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
     this.atoms = [];
     this.bonds = [];
 
+    this.center = function() {
+        var center = new THREE.Vector3();
+        for(var i in this.atoms) {
+            center.add(this.atoms[i].coords);
+        }
+        center.divideScalar(this.atoms.length);
+        return center;
+    }
+
     this.setup_atoms = function(atoms) {
         for(var i in atoms) {
             this.atoms.push(null);
@@ -118,15 +145,15 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
         }
     };
 
-    this.draw = function(scene, draw_mode) {
+    this.draw = function(geo, draw_mode) {
         this.draw_mode = draw_mode;
         if(this.draw_mode == RNAMAKE.DrawMode.STICKS) {
-            this.atoms.forEach(function(a) {
-                if(a == null) { return true; }
-                a.draw(scene, draw_mode);
-            });
-
-            this.draw_bonds(scene);
+            for(var i in this.atoms) {
+                if(this.atoms[i] == null) { return true; }
+                var obj = this.atoms[i].draw_object(draw_mode);
+                obj.updateMatrix();
+                geo.merge(obj.geometry, obj.matrix);
+            }
         }
     }
 
@@ -144,6 +171,22 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
         this.draw_bond(7, 10, scene);
         this.draw_bond(9, 10, scene);
         this.draw_bond(10, 11, scene);
+
+        if(this.name == "G") {
+            this.draw_bond(12, 13, scene);
+            this.draw_bond(13, 14, scene);
+            this.draw_bond(13, 15, scene);
+            this.draw_bond(15, 16, scene);
+            this.draw_bond(16, 17, scene);
+            this.draw_bond(17, 18, scene);
+            this.draw_bond(18, 19, scene);
+            this.draw_bond(17, 20, scene);
+            this.draw_bond(20, 21, scene);
+            this.draw_bond(21, 22, scene);
+            this.draw_bond(22, 9, scene);
+            this.draw_bond(22, 16, scene);
+            this.draw_bond(12, 18, scene);
+        }
     };
 
     this.draw_bond = function(i, j, scene) {
@@ -169,7 +212,7 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
         //edge.position.copy(a1.obj.position);
         edge.castShadow = true;
         edge.receiveShadow = true;
-        self.bonds.push(edge);
+        this.bonds.push(edge);
         scene.add(edge);
 
     }
@@ -177,7 +220,7 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
 
 RNAMAKE.str_to_atom = function(s) {
     var spl = s.split(" ");
-    var coords = new THREE.Vector3(spl[1], spl[2], spl[3]);
+    var coords = new THREE.Vector3(parseFloat(spl[1]), parseFloat(spl[2]), parseFloat(spl[3]));
     return new RNAMAKE.Atom(spl[0], coords);
 }
 
