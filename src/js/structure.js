@@ -201,7 +201,23 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
 
 
         }
+
+        if(this.name == "U") {
+            this.draw_bond(9, 12, geo);
+            this.draw_bond(12, 13, geo);
+            this.draw_bond(13, 15, geo);
+            this.draw_bond(15, 16, geo);
+            this.draw_bond(16, 18, geo);
+            this.draw_bond(18, 19, geo);
+            this.draw_bond(19, 12, geo);
+            this.draw_bond(14, 13, geo);
+            this.draw_bond(16, 17, geo);
+
+
+        }
     };
+
+
 
     this.draw_cartoons = function(geo) {
         this.draw_sugar_cartoon(geo);
@@ -232,7 +248,75 @@ RNAMAKE.Residue = function(rtype, name, num, chain_id, i_code) {
     }
 
     this.draw_base_cartoon = function(geo) {
-        var base_points = [];
+        var base_points_1 = [];
+        var base_points_2 = [];
+
+        if(this.name == "A") {
+            base_points_1.push( this.atoms[21].coords.clone());
+            base_points_1.push( this.atoms[20].coords.clone());
+            base_points_1.push( this.atoms[19].coords.clone());
+            base_points_1.push( this.atoms[16].coords.clone());
+            base_points_1.push( this.atoms[15].coords.clone());
+
+            base_points_2.push( this.atoms[17].coords.clone());
+            base_points_2.push( this.atoms[16].coords.clone());
+            base_points_2.push( this.atoms[15].coords.clone());
+            base_points_2.push( this.atoms[14].coords.clone());
+            base_points_2.push( this.atoms[13].coords.clone());
+            base_points_2.push( this.atoms[12].coords.clone());
+
+            this.draw_bond(9, 21, geo);
+        }
+
+        if(this.name == "G") {
+            base_points_1.push( this.atoms[22].coords.clone());
+            base_points_1.push( this.atoms[21].coords.clone());
+            base_points_1.push( this.atoms[20].coords.clone());
+            base_points_1.push( this.atoms[17].coords.clone());
+            base_points_1.push( this.atoms[16].coords.clone());
+
+            base_points_2.push( this.atoms[17].coords.clone());
+            base_points_2.push( this.atoms[16].coords.clone());
+            base_points_2.push( this.atoms[18].coords.clone());
+            base_points_2.push( this.atoms[12].coords.clone());
+            base_points_2.push( this.atoms[13].coords.clone());
+            base_points_2.push( this.atoms[15].coords.clone());
+        }
+
+        if(this.name == "U") {
+            base_points_1.push( this.atoms[12].coords.clone());
+            base_points_1.push( this.atoms[13].coords.clone());
+            base_points_1.push( this.atoms[15].coords.clone());
+            base_points_1.push( this.atoms[16].coords.clone());
+            base_points_1.push( this.atoms[18].coords.clone());
+            base_points_1.push( this.atoms[19].coords.clone());
+        }
+
+        var geometry = new THREE.ConvexGeometry(base_points_1);
+
+        for (var k = 0; k < geometry.faces.length; k++) {
+            face = geometry.faces[k];
+            face.color.set(this.bond_color);
+        }
+        var mesh = new THREE.Mesh(geometry);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        mesh.updateMatrix();
+        geo.merge(mesh.geometry, mesh.matrix);
+
+        if(this.name == "A" || this.name == "G") {
+            var geometry = new THREE.ConvexGeometry(base_points_2);
+
+            for (var k = 0; k < geometry.faces.length; k++) {
+                face = geometry.faces[k];
+                face.color.set(this.bond_color);
+            }
+            var mesh = new THREE.Mesh(geometry);
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            mesh.updateMatrix();
+            geo.merge(mesh.geometry, mesh.matrix);
+        }
 
     }
 
